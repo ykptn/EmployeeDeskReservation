@@ -16,7 +16,7 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    @PostMapping
+    @PostMapping("/reserve")
     public ResponseEntity<ReservationDTO> createReservation(@RequestBody ReservationDTO reservationDTO) {
         ReservationDTO createdReservation = reservationService.createReservation(reservationDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReservation);
@@ -40,13 +40,13 @@ public class ReservationController {
         return ResponseEntity.ok(reservationHistory);
     }
 
-    @PutMapping("/{reservationId}")
+    @PutMapping("/update/{reservationId}")
     public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Long reservationId, @RequestBody ReservationDTO updatedReservation) {
         ReservationDTO reservationDTO = reservationService.updateReservation(reservationId, updatedReservation);
         return ResponseEntity.ok(reservationDTO);
     }
 
-    @DeleteMapping("/{reservationId}")
+    @DeleteMapping("/delete/{reservationId}")
     public ResponseEntity<Void> deleteReservation(@PathVariable Long reservationId) {
         reservationService.deleteReservation(reservationId);
         return ResponseEntity.noContent().build();

@@ -1,7 +1,9 @@
 package com.eyl.backend.service.serviceImplementations;
 
+import com.eyl.backend.LoginMessage;
 import com.eyl.backend.dto.EmployeeDTO;
-import com.eyl.backend.dto.ReservationDTO;
+import com.eyl.backend.dto.LoginDTO;
+import com.eyl.backend.dto.PasswordDTO;
 import com.eyl.backend.entity.Employee;
 import com.eyl.backend.exception.ResourceNotFoundException;
 import com.eyl.backend.mapper.EmployeeMapper;
@@ -10,9 +12,12 @@ import com.eyl.backend.repository.DepartmentRepository;
 import com.eyl.backend.repository.EmployeeRepository;
 import com.eyl.backend.service.serviceInterfaces.IEmployeeService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +28,7 @@ public class EmployeeService implements IEmployeeService {
     private final EmployeeRepository repo;
     private final DepartmentRepository departmentRepository;
     private final CompanyRepository companyRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @Override
     public EmployeeDTO createUser(EmployeeDTO userDTO) {
         Employee employee = EmployeeMapper.INSTANCE.mapToEmployee(userDTO);
@@ -44,12 +49,13 @@ public class EmployeeService implements IEmployeeService {
             throw new IllegalArgumentException("Company ID cannot be null");
         }
 
-        employee.setPassword(employee.getFirstName()+employee.getLastName());
+        String initialPassword= employee.getFirstName()+employee.getLastName();
+        String encryptedPassword = passwordEncoder.encode(initialPassword);
+        employee.setPassword(encryptedPassword);
 
         Employee savedEmployee = repo.save(employee);
         return EmployeeMapper.INSTANCE.mapToEmployeeDTO(savedEmployee);
     }
-
     @Override
     public EmployeeDTO getUserById(Long userId) {
         Employee user = repo.findById(userId)
@@ -100,7 +106,40 @@ public class EmployeeService implements IEmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         repo.delete(user);
     }
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Employee user = repo.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getEmail())
+                .password(user.getPassword())
+                .roles("USER") // Adjust roles as needed
+                .build();
+    }
+    @Override
+    public LoginMessage login(LoginDTO loginDTO) {
+        Employee user = repo.findByEmail(loginDTO.getEmail());
+        if (user != null) {
+            String password = loginDTO.getPassword();
+            String encodedPassword = user.getPassword();
+            if (passwordEncoder.matches(password, encodedPassword)) {
+                return new LoginMessage("Login Success", true);
+            } else {
+                return new LoginMessage("Login Failed: Incorrect password", false);
+            }
+        } else {
+            return new LoginMessage("Email not found", false);
+        }
+    }
+    @Override
+    public void changePassword(Long userId, PasswordDTO passwordDTO) {
+        Employee employee = repo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: "+ userId));
 
-
-
+        String encryptedPassword = passwordEncoder.encode(passwordDTO.getNewPassword());
+        employee.setPassword(encryptedPassword);
+        repo.save(employee);
+    }
 }
