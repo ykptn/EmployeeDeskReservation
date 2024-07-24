@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,9 +30,19 @@ public class EmployeeService implements IEmployeeService {
     private final DepartmentRepository departmentRepository;
     private final CompanyRepository companyRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Override
     public EmployeeDTO createUser(EmployeeDTO userDTO) {
+        // Validate input DTO
+        if (userDTO == null) {
+            throw new IllegalArgumentException("EmployeeDTO cannot be null");
+        }
+
         Employee employee = EmployeeMapper.INSTANCE.mapToEmployee(userDTO);
+
+        if (employee == null) {
+            throw new IllegalArgumentException("Mapping to Employee failed");
+        }
 
         // Validate and set Department
         if (userDTO.getDepId() != null) {
@@ -49,12 +60,27 @@ public class EmployeeService implements IEmployeeService {
             throw new IllegalArgumentException("Company ID cannot be null");
         }
 
-        String initialPassword= employee.getFirstName()+employee.getLastName();
+        // Validate and set Role
+        String role = userDTO.getRole() != null ? userDTO.getRole() : RoleConstants.DEFAULT_ROLE;
+        if (isValidRole(role)) {
+            employee.setRole(role);
+        } else {
+            throw new IllegalArgumentException("Invalid role: " + role);
+        }
+
+        // Generate and set encrypted password
+        String initialPassword = employee.getFirstName() + employee.getLastName();
         String encryptedPassword = passwordEncoder.encode(initialPassword);
         employee.setPassword(encryptedPassword);
 
         Employee savedEmployee = repo.save(employee);
         return EmployeeMapper.INSTANCE.mapToEmployeeDTO(savedEmployee);
+    }
+
+    // Valid role checker
+    private boolean isValidRole(String role) {
+        List<String> validRoles = Arrays.asList(RoleConstants.MANAGER, RoleConstants.USER); // Define valid roles here
+        return validRoles.contains(role);
     }
     @Override
     public EmployeeDTO getUserById(Long userId) {
@@ -92,8 +118,8 @@ public class EmployeeService implements IEmployeeService {
             existingEmployee.setCompany(companyRepository.findById(updatedUserDTO.getComId())
                     .orElseThrow(() -> new ResourceNotFoundException("Company not found")));
         }
-        if (updatedUserDTO.getUserRole() != null) {
-            existingEmployee.setRole(EmployeeMapper.INSTANCE.stringToRole(updatedUserDTO.getUserRole()));
+        if (updatedUserDTO.getRole() != null) {
+            existingEmployee.setRole(updatedUserDTO.getRole());
         }
 
         Employee updatedEmployee = repo.save(existingEmployee);
@@ -142,4 +168,31 @@ public class EmployeeService implements IEmployeeService {
         employee.setPassword(encryptedPassword);
         repo.save(employee);
     }
+
+    @Override
+    public EmployeeDTO findByEmail(String email) {
+        Employee employee = repo.findByEmail(email);
+        return EmployeeMapper.INSTANCE.mapToEmployeeDTO(employee);
+    }
+
+    @Override
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    @Override
+    public void updatePassword(Long userId, String encryptedPassword) {
+        Employee employee = repo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + userId));
+        employee.setPassword(encryptedPassword);
+        repo.save(employee);
+
+    }
+
+    @Override
+    public List<Employee> searchEmployees(String query) {
+        List<Employee> employees =repo.searchEmployees(query);
+        return employees;
+    }
+
 }

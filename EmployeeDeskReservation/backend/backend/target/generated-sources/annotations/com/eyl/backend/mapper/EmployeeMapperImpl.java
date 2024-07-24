@@ -8,7 +8,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-07-19T13:54:18+0300",
+    date = "2024-07-24T11:37:55+0300",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 22.0.1 (Oracle Corporation)"
 )
 public class EmployeeMapperImpl implements EmployeeMapper {
@@ -23,11 +23,11 @@ public class EmployeeMapperImpl implements EmployeeMapper {
 
         employeeDTO.setDepId( employeeDepartmentDepId( employee ) );
         employeeDTO.setComId( employeeCompanyComId( employee ) );
-        employeeDTO.setUserRole( roleToString( employee.getRole() ) );
         employeeDTO.setEmpId( employee.getEmpId() );
         employeeDTO.setFirstName( employee.getFirstName() );
         employeeDTO.setLastName( employee.getLastName() );
         employeeDTO.setEmail( employee.getEmail() );
+        employeeDTO.setRole( employee.getRole() );
 
         return employeeDTO;
     }
@@ -42,11 +42,11 @@ public class EmployeeMapperImpl implements EmployeeMapper {
 
         employee.setDepartment( employeeDTOToDepartment( employeeDTO ) );
         employee.setCompany( employeeDTOToCompany( employeeDTO ) );
-        employee.setRole( stringToRole( employeeDTO.getUserRole() ) );
         employee.setEmpId( employeeDTO.getEmpId() );
         employee.setFirstName( employeeDTO.getFirstName() );
         employee.setLastName( employeeDTO.getLastName() );
         employee.setEmail( employeeDTO.getEmail() );
+        employee.setRole( employeeDTO.getRole() );
 
         return employee;
     }

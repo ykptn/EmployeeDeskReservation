@@ -4,6 +4,7 @@ import com.eyl.backend.LoginMessage;
 import com.eyl.backend.dto.EmployeeDTO;
 import com.eyl.backend.dto.LoginDTO;
 import com.eyl.backend.dto.PasswordDTO;
+import com.eyl.backend.entity.Employee;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -22,4 +23,12 @@ public interface IEmployeeService {
 
 
     void changePassword(Long userId, PasswordDTO passwordDTO);
+
+    EmployeeDTO findByEmail(String email);
+
+    String encodePassword(String password);
+
+    void updatePassword(Long userId, String encryptedPassword);
+
+    List<Employee> searchEmployees(String query);
 }

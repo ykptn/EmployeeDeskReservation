@@ -1,6 +1,5 @@
 package com.eyl.backend.entity;
 
-import com.eyl.backend.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,8 +37,8 @@ public class Employee {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private RoleEnum role;
+
+    @Column(name = "role")
+    private String role;
 
 }

@@ -4,7 +4,7 @@ import com.eyl.backend.dto.ReservationDTO;
 import com.eyl.backend.entity.Desk;
 import com.eyl.backend.entity.Employee;
 import com.eyl.backend.entity.Reservation;
-import com.eyl.backend.enums.RoleEnum;
+
 import com.eyl.backend.exception.ResourceNotFoundException;
 import com.eyl.backend.mapper.ReservationMapper;
 import com.eyl.backend.repository.DeskRepository;
@@ -54,7 +54,7 @@ public class ReservationService implements IReservationService {
             }
 
             // If the employee is a worker, check if they already have a reservation for the day
-            if (reservation.getEmployee().getRole() == RoleEnum.WORKER) {
+            if (reservation.getEmployee().getRole() == RoleConstants.USER) {
                 if (checkExistingReservation(reservationDTO)) {
                     throw new IllegalArgumentException("Employee already has a reservation for the day");
                 }

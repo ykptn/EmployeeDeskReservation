@@ -3,7 +3,6 @@ package com.eyl.backend.mapper;
 
 import com.eyl.backend.dto.EmployeeDTO;
 import com.eyl.backend.entity.Employee;
-import com.eyl.backend.enums.RoleEnum;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -16,21 +15,11 @@ public interface EmployeeMapper {
 
     @Mapping(source = "department.depId", target = "depId")
     @Mapping(source = "company.comId", target = "comId")
-    @Mapping(source = "role", target = "userRole", qualifiedByName = "roleToString")
     EmployeeDTO mapToEmployeeDTO(Employee employee);
 
     @Mapping(source = "depId", target = "department.depId")
     @Mapping(source = "comId", target = "company.comId")
-    @Mapping(source = "userRole", target = "role", qualifiedByName = "stringToRole")
     Employee mapToEmployee(EmployeeDTO employeeDTO);
 
-    @Named("roleToString")
-    default String roleToString(RoleEnum roleEnum) {
-        return roleEnum != null ? roleEnum.name() : null;
-    }
 
-    @Named("stringToRole")
-    default RoleEnum stringToRole(String role) {
-        return role != null ? RoleEnum.valueOf(role) : null;
-    }
 }

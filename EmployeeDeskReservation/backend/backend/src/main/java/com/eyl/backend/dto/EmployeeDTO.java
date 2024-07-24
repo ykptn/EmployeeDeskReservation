@@ -17,6 +17,6 @@ public class EmployeeDTO {
     private String email;
     private Long depId;
     private Long comId;
-    private String userRole;
+    private String role;
 
 }
